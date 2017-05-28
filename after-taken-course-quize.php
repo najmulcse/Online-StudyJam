@@ -1,0 +1,346 @@
+<?php
+
+    include("dbConnection.php");
+
+    session_start();
+
+    $courseID = $_SESSION['courseID'];
+    $lectureID = $_SESSION['lectureID'];
+
+
+    // for number of quize in this lecture
+
+    $query = "SELECT quizeID FROM after_taken_course_quize_table WHERE courseIDInQuize = $courseID AND lectureID = $lectureID";
+
+    $result = mysqli_query($con,$query);
+
+    $row = mysqli_fetch_assoc($result);
+
+    $quizeContentNumber = mysqli_num_rows($result);
+
+    $quizeID = $row['quizeID'];
+
+
+
+
+    // get lecture videoURL
+
+
+    $query = "SELECT videoURL FROM `after_taken_course_course_content_table` WHERE lectureID = $lectureID";
+
+    $result = mysqli_query($con,$query);
+
+    $row = mysqli_fetch_assoc($result);
+
+    $videoURL = $row['videoURL'];
+
+    // to split the string
+    $pieces = explode("\\", $videoURL);
+
+
+    // to replace space with underscore and %20
+    $pieces[0] = preg_replace('/\s+/', '_', $pieces[0]);
+    $pieces[1] = preg_replace('/\s+/', '_', $pieces[1]);
+    $pieces[2] = preg_replace('/\s+/', '_', $pieces[2]);
+    $pieces[3] = preg_replace('/\s+/', '_', $pieces[3]);
+    $pieces[4] = preg_replace('/\s+/', '%20', $pieces[4]);
+
+    $videoURL = "";
+
+    for($i = 0; $i<5; $i++)
+    {
+        if($i != 0 )
+        {
+            $videoURL.='\\';
+            $videoURL.= $pieces[$i];
+        }
+        else
+            $videoURL.= $pieces[$i];
+
+    } 
+if(isset($_POST['quize_button'])){
+ echo "<script> alert( 'Your answer has been submitted.')</script>" ;
+}
+?>
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Taken Course|Online StudyJam</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/style.css." rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="../../assets/js/ie-emulation-modes-warning.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+	<div class="fluid-container">
+	
+        <!-- 1st navbar
+        ===================== -->
+	   <?php
+      
+    if(!(isset($_SESSION['valid_email']) && $_SESSION['valid_email'] != ''))
+    {
+     $email ="";
+     include("include/navigationwithoutLogin.php"); 
+     
+    }
+     else
+          include("include/navigation.php");
+      
+      ?>
+        
+        <!-- vedio section
+        ===================== -->
+        <div class="container-fluid vedio-section">
+            <div class="row">
+                <div class="col-sm-7">
+                    <div class="row">
+                        <div class="col-sm-8 col-sm-offset-2">
+                            <?php echo '<video width="560" height="315" controls>
+                              <source src="'.$videoURL.'" type="video/mp4">
+                            </video>'; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-5">
+                    <!--<button type="button" class="btn btn-primary btn-padding">Continue to next lecture</button>
+                    
+                    <button type="button" class="btn btn-primary btn-previous-lecture btn-padding">Previous lecture</button>-->
+                    
+                    <?php
+                            
+                            $next = $lectureID + 1;
+                             
+                            echo '<a style="color:white;text-decoration:none" href="set-lectureID-and-courseID.php?lecture='.$next.'"><button type="button" class="btn btn-primary btn-previous-lecture btn-padding">Continue to next lecture</button></a>';
+                    
+                            
+                            $prev = $lectureID - 1;
+                    
+                            if($prev == 0)
+                                $prev = 1;
+                        
+                            echo '<a style="color:white;text-decoration:none" href="set-lectureID-and-courseID.php?lecture='.$prev.'"><button type="button" class="btn btn-primary btn-previous-lecture btn-padding">Previous lecture</button></a>';
+                        
+                    ?>
+                    
+                    <p class="paragraph-padding">Get started ( 5 of 25 items completed  )</p><br>
+                    <div class="progress">
+                          <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
+                            20%
+                          </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            
+            
+        </div>
+        
+        <!-- 2nd navbar
+        ===================== -->
+        
+        
+        <nav class="navbar navbar-inverse navbar-static-top">
+              <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </button>
+                  
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                  <ul class="nav navbar-nav navbar-padding">
+                    <li><a href="after-taken-course-course-content.php">Course Content <span class="sr-only">(current)</span></a></li>
+                    <li><a href="after-taken-course-content-q-and-a.php">Q &amp; A</a></li>
+                    <li ><a href="after-taken-course-announcement.php">Announcement</a></li>
+                    <li class="active"><a href="after-taken-course-quize.php">Quize</a></li>
+                    
+                    
+                    
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Take you into next level <span class="caret"></span></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="after-taken-course-take-your-into-next-level-project.php">Project</a></li>
+                        <li><a href="after-taken-course-take-you-into-next-level-real-life-application.php">Real life Application</a></li>
+                        <li><a href="after-taken-course-take-you-into-next-level-exam.php">Exam</a></li>
+                        
+                      </ul>
+                    </li>
+                    
+                    
+                  </ul>
+                  
+                  
+                </div><!-- /.navbar-collapse -->
+              </div><!-- /.container-fluid -->
+            </nav>
+
+        
+        <!-- quize
+        ===================== -->
+        
+        <div id="after-taken-course-quize">
+           
+           
+           
+            <?php
+            
+                //$score = 0;
+            
+                for($i = 1; $i <= $quizeContentNumber; $i++)
+                {
+                    // for quize heading
+                    $query = "SELECT quizeHeading FROM `after_taken_course_quize_table` WHERE quizeID = $quizeID";
+
+                    $result = mysqli_query($con,$query);
+
+                    $row = mysqli_fetch_assoc($result);
+
+                    $quizeHeading = $row['quizeHeading'];
+                    
+                    
+                    // for quize options
+                    $query = "SELECT quizeOptions FROM `after_taken_course_quize_table` WHERE quizeID = $quizeID";
+
+                    $result = mysqli_query($con,$query);
+
+                    $row = mysqli_fetch_assoc($result);
+
+                    $quizeOptions = $row['quizeOptions'];
+                    
+                    $pieces = explode("\n", $quizeOptions);
+                    
+                    // for quize answer  /* for further use  */
+                    //$query = "SELECT quizeAnswer FROM `after_taken_course_quize_table` WHERE quizeID = $quizeID";
+
+                    //$result = mysqli_query($con,$query);
+
+                    //$row = mysqli_fetch_assoc($result);
+
+                    //$quizeAnswer = $row['quizeAnswer'];
+                    
+                    
+                    echo '
+                    <div class="row">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-8">
+                            <div class="col-sm-1">
+                                <h4>Q.'.$i.':</h4>
+                            </div>
+                            <div class="col-sm-11">
+                                <h4>'.$quizeHeading.'</h4>
+
+                                <div class="radio">
+                                  <label>
+                                    <input type="radio" name="question-'.$i.'" value="1" >
+                                    '.$pieces[0].'
+                                  </label>
+                                </div>
+                                <div class="radio">
+                                  <label>
+                                    <input type="radio" name="question-'.$i.'" value="2">
+                                        '.$pieces[1].'
+                                  </label>
+                                </div>
+
+                                <div class="radio">
+                                  <label>
+                                    <input type="radio" name="question-'.$i.'" value="3" >
+                                    '.$pieces[2].'
+                                  </label>
+                                </div>
+                                <div class="radio">
+                                  <label>
+                                    <input type="radio" name="question-'.$i.'" value="4">
+                                    '.$pieces[3].'
+                                  </label>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>';
+                    
+                    $quizeID++;
+                }
+            
+            ?>
+   
+            <div class="row">
+               <form method="post" action="after-taken-course-quize.php">
+                <div class="col-sm-8"></div>
+                <div class="col-sm-4">
+                    <button type="submit" name="quize_button" class="btn btn-success">Submit</button>
+                    
+                    
+                </div>
+                </form>
+            </div>
+            
+            
+        </div>
+       
+	</div>
+
+	<!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Just to make our placeholder images work. Don't actually copy the next line! -->
+    <script src="../../assets/js/vendor/holder.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+    
+    <!-- jquery CDN -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    
+    
+	<script>
+	</script>
+
+</body>
+
+</html>
